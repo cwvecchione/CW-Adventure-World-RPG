@@ -1,9 +1,9 @@
 class ChestModel {
-    constructor() {
-        this.id
-        this.spawnerId
-        this.x
-        this.y
-        this.gold
-    }
+  constructor(x, y, gold, spawnerId) {
+    this.id = `${spawnerId}-${uuid.v4()}`;
+    this.spawnerId = spawnerId;
+    this.x = x;
+    this.y = y;
+    this.gold = gold;
+  }
 }
