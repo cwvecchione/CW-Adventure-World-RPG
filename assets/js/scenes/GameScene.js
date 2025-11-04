@@ -1,4 +1,6 @@
-class GameScene extends Phaser.Scene {
+import DialogWindow from '../classes/DialogWindow';
+
+export default class GameScene extends Phaser.Scene {
   constructor() {
     super('Game');
   }
@@ -14,9 +16,13 @@ class GameScene extends Phaser.Scene {
     this.createInput();
 
     this.createGameManager();
+
+    this.scale.on('resize', this.resize, this);
+    this.resize({ height: this.scale.height, width: this.scale.width });
   }
 
   update() {
+    this.dialogWindow.update();
     if (this.player) this.player.update(this.cursors);
   }
 
@@ -185,5 +191,24 @@ class GameScene extends Phaser.Scene {
 
     this.gameManager = new GameManager(this, this.map.map.objects);
     this.gameManager.setup();
+  }
+
+  resize(gameSize) {
+    const { width, height } = gameSize;
+    this.cameras.resize(width, height);
+    if (width < 1000) {
+      this.titleText.setFontSize('64px');
+    } else {
+      this.titleText.setFontSize('128px');
+    }
+    if (height < 700) {
+      this.titleText.setPosition(width / 2, height * 0.4);
+      this.startGameButton.setPosition(width / 2, height * 0.7);
+      this.startGameButton.setScale(0.5);
+    } else {
+      this.titleText.setPosition(width / 2, height / 2);
+      this.startGameButton.setPosition(width / 2, height * 0.75);
+      this.startGameButton.setScale(1);
+    }
   }
 }

@@ -1,13 +1,8 @@
-var config = {
+import scenes from './scenes/scenes';
+
+const config = {
   type: Phaser.AUTO,
-  width: 800,
-  height: 600,
-  scene: [
-    BootScene,
-    TitleScene,
-    GameScene,
-    UiScene,
-  ],
+  scene: scenes,
   physics: {
     default: 'arcade',
     arcade: {
@@ -16,6 +11,12 @@ var config = {
         y: 0,
       },
     },
+  },
+  scale: {
+    width: '100%',
+    height: '100%',
+    mode: Phaser.Scale.RESIZE,
+    parent: 'phaser-game'
   },
   pixelArt: true,
   roundPixels: true,
