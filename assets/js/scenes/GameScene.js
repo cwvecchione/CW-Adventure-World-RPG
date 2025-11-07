@@ -1,6 +1,12 @@
+import * as Phaser from 'phaser';
+import PlayerContainer from '../classes/player/PlayerContainer';
+import Chest from '../classes/Chest';
+import Monster from '../classes/Monster';
+import GameMap from '../classes/GameMap';
 import DialogWindow from '../classes/DialogWindow';
+import Item from '../classes/Item';
 
-export default class GameScene extends Phaser.Scene {
+class GameScene extends Phaser.Scene {
   constructor() {
     super('Game');
   }
@@ -16,13 +22,9 @@ export default class GameScene extends Phaser.Scene {
     this.createInput();
 
     this.createGameManager();
-
-    this.scale.on('resize', this.resize, this);
-    this.resize({ height: this.scale.height, width: this.scale.width });
   }
 
   update() {
-    this.dialogWindow.update();
     if (this.player) this.player.update(this.cursors);
   }
 
@@ -54,6 +56,8 @@ export default class GameScene extends Phaser.Scene {
     // create a monster group
     this.monsters = this.physics.add.group();
     this.monsters.runChildUpdate = true;
+    // create an items group
+    this.items = this.physics.add.group();
   }
 
   spawnChest(chestObject) {
@@ -95,6 +99,21 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
+  spawnItem(itemObject) {
+    let item = this.items.getFirstDead();
+    if (!item) {
+      item = new Item(this, itemObject.x * 2, itemObject.y * 2, 'tools', itemObject.frame, itemObject.id);
+      // add item to items group
+      this.items.add(item);
+    } else {
+      item.id = itemObject.id;
+      item.frame = itemObject.frame;
+      item.setFrame(item.frame);
+      item.setPosition(itemObject.x * 2, itemObject.y * 2);
+      item.makeActive();
+    }
+  }
+
   createInput() {
     this.cursors = this.input.keyboard.createCursorKeys();
   }
@@ -108,6 +127,8 @@ export default class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.monsters, this.map.blockedLayer);
     // check for overlaps between the player's weapon and monster game objects
     this.physics.add.overlap(this.player.weapon, this.monsters, this.enemyOverlap, null, this);
+    // check for overlaps between player and item game objects
+    this.physics.add.overlap(this.player, this.items, this.collectItem, null, this);
   }
 
   enemyOverlap(weapon, enemy) {
@@ -121,6 +142,10 @@ export default class GameScene extends Phaser.Scene {
     // play gold pickup sound
     this.goldPickupAudio.play();
     this.events.emit('pickUpChest', chest.id, player.id);
+  }
+
+  collectItem(player, item) {
+    this.event.emit('pickUpItem', item.id);
   }
 
   createMap() {
@@ -189,26 +214,45 @@ export default class GameScene extends Phaser.Scene {
       this.player.respawn(playerObject);
     });
 
+    this.events.on('updateItems', (playerObject) => {
+      this.player.items = playerObject.playerItems;
+      this.player.maxHealth = playerObject.maxHealth;
+      this.player.attackValue = playerObject.attack;
+      this.player.defenseValue = playerObject.defense;
+      this.player.updateHealthBar();
+    });
+
+    this.events.on('updatePlayersItems', (playerId, playerObject) => {
+      this.otherPlayers.getChildren().forEach((otherPlayer) => {
+        if (playerId === otherPlayer.id) {
+          otherPlayer.items = playerObject.playerItems;
+          otherPlayer.maxHealth = playerObject.maxHealth;
+          otherPlayer.attackValue = playerObject.attack;
+          otherPlayer.defenseValue = playerObject.defense;
+          otherPlayer.updateHealthBar();
+        }
+      });
+    });
+
+    this.events.on('currentItems', (items) => {
+      Object.keys(items).forEach((id) => {
+      this.spawnItem(items[id]);
+      });
+    });
+
+    this.events.on('itemSpawned', (item) => {
+      this.spawnItem(item);
+    });
+
+    this.events.on('itemRemoved', (itemId) => {
+      this.items.getChildren().forEach((item) => {
+        if (item.id === itemId) {
+          item.makeInactive();
+        }
+      });
+    });
+
     this.gameManager = new GameManager(this, this.map.map.objects);
     this.gameManager.setup();
-  }
-
-  resize(gameSize) {
-    const { width, height } = gameSize;
-    this.cameras.resize(width, height);
-    if (width < 1000) {
-      this.titleText.setFontSize('64px');
-    } else {
-      this.titleText.setFontSize('128px');
-    }
-    if (height < 700) {
-      this.titleText.setPosition(width / 2, height * 0.4);
-      this.startGameButton.setPosition(width / 2, height * 0.7);
-      this.startGameButton.setScale(0.5);
-    } else {
-      this.titleText.setPosition(width / 2, height / 2);
-      this.startGameButton.setPosition(width / 2, height * 0.75);
-      this.startGameButton.setScale(1);
-    }
   }
 }

@@ -1,3 +1,11 @@
+import ItemModel from './ItemModel';
+import * as itemData from '../../level/tools.json';
+
+function getRandomBonusValue() {
+  const bonusValues = [-10, -7, -5, 0, 3, 5, 7, 10, 12, 15];
+  return bonusValues[Math.floor(Math.random() * bonusValues.length)];
+}
+
 class Spawner {
   constructor(config, spawnLocations, addObject, deleteObject, moveObjects) {
     this.id = config.id;
@@ -28,6 +36,8 @@ class Spawner {
       this.spawnChest();
     } else if (this.objectType === SpawnerType.MONSTER) {
       this.spawnMonster();
+    } else if (this.objectType === SpawnerType.ITEM) {
+        this.spawnItem();
     }
   }
 
@@ -46,11 +56,22 @@ class Spawner {
       randomNumber(10, 20),
       this.id,
       randomNumber(0, 20),
-      randomNumber(3, 5),
-      1,
-      );
+      randomNumber(100, 150),
+      randomNumber(10, 20),
+    );
     this.objectsCreated.push(monster);
     this.addObject(monster.id, monster);
+  }
+
+  spawnItem() {
+    const location = this.pickRandomLocation();
+    const randomItem = itemData.items[Math.floor(Math.random() * itemData.items.length)];
+    const item = new ItemModel(
+      location[0], location[1], this.id, randomItem.name,
+      randomItem.frame, getRandomBonusValue(), getRandomBonusValue(), getRandomBonusValue(),
+    );
+    this.objectsCreated.push(item);
+    this.addObject(item.id, item);
   }
 
   pickRandomLocation() {

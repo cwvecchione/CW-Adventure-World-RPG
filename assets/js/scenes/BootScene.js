@@ -17,7 +17,6 @@ class BootScene extends Phaser.Scene {
   loadImages() {
     this.load.image('button1', 'assets/images/ui/blue_button01.png');
     this.load.image('button2', 'assets/images/ui/blue_button02.png');
-    // load the map tileset image
     this.load.image('background', 'assets/level/background-extruded.png');
   }
 
@@ -25,6 +24,7 @@ class BootScene extends Phaser.Scene {
     this.load.spritesheet('items', 'assets/images/items.png', { frameWidth: 32, frameHeight: 32 });
     this.load.spritesheet('characters', 'assets/images/characters.png', { frameWidth: 32, frameHeight: 32, startFrame: 9 });
     this.load.spritesheet('monsters', 'assets/images/monsters.png', { frameWidth: 32, frameHeight: 32 });
+    this.load.spritesheet('tools', 'assets/images/tools.png', { frameWidth: 32, frameHeight: 32 });
   }
 
   loadAudio() {

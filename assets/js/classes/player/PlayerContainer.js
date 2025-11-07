@@ -18,6 +18,10 @@ class PlayerContainer extends Phaser.GameObjects.Container {
     this.maxHealth = maxHealth;
     this.id = id;
     this.attackAudio = attackAudio;
+    this.gold = gold;
+    this.defenseValue = defenseValue;
+    this.attackValue = attackValue;
+    this.items = items;
 
     // set a size on the container
     this.setSize(64, 64);

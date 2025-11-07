@@ -1,3 +1,5 @@
+import * as itemData from '../../level/tools.json';
+
 class GameManager {
   constructor(scene, mapData) {
     this.scene = scene;
@@ -7,10 +9,12 @@ class GameManager {
     this.chests = {};
     this.monsters = {};
     this.players = {};
+    this.items = {};
 
     this.playerLocations = [];
     this.chestLocations = {};
     this.monsterLocations = {};
+    this.itemLocations = itemData.locations;
   }
 
   setup() {
@@ -62,13 +66,27 @@ class GameManager {
       }
     });
 
+    this.scene.events.on('pickUpItem', (itemId) => {
+      // update the spawner
+      if (this.items[itemId]) {
+        if (this.players[playerId].canPickupItem()) {
+          this.players[playerId].addItem(this.items[itemId]);
+          this.scene.events.emit('updateItems', this.players[playerId]);
+
+          // removing the item
+          this.spawners[this.items[itemId].spawnerId].removeObject(itemId);
+        }
+      }
+    });
+
     this.scene.events.on('monsterAttacked', (monsterId, playerId) => {
       // update the spawner
       if (this.monsters[monsterId]) {
         const { gold, attack } = this.monsters[monsterId];
+        const playerAttackValue = this.players[playerId].attack;
 
         // subtract health monster model
-        this.monsters[monsterId].loseHealth();
+        this.monsters[monsterId].loseHealth(playerAttackValue);
 
         // check the monsters health, and if dead remove that object
         if (this.monsters[monsterId].health <= 0) {
@@ -81,11 +99,11 @@ class GameManager {
           this.scene.events.emit('monsterRemoved', monsterId);
 
           // add bonus health to the player
-          this.players[playerId].updateHealth(2);
+          this.players[playerId].updateHealth(15);
           this.scene.events.emit('updatePlayerHealth', playerId, this.players[playerId].health);
         } else {
           // update the players health
-          this.players[playerId].updateHealth(-attack);
+          this.players[playerId].playerAttacked(attack);
           this.scene.events.emit('updatePlayerHealth', playerId, this.players[playerId].health);
 
           // update the monsters health
@@ -142,6 +160,19 @@ class GameManager {
       );
       this.spawners[spawner.id] = spawner;
     });
+
+    // create item spawner
+    config.id = 'item';
+    config.spawnerType = SpawnerType.ITEM;
+    config.limit = 3;
+    config.spawnInterval = 1000 * 60 * 5;
+    spawner = new Spawner(
+    config,
+    this.itemLocations,
+    this.addItem.bind(this),
+    this.deleteItem.bind(this),
+    );
+    this.spawners[spawner.id] = spawner;
   }
 
   spawnPlayer() {
@@ -170,5 +201,14 @@ class GameManager {
 
   moveMonsters() {
     this.scene.events.emit('monsterMovement', this.monsters);
+  }
+
+  addItem(itemId, item) {
+    this.items[itemId] = item;
+    this.io.emit('itemSpawned', item);
+  }
+  deleteItem(itemId) {
+    delete this.items[itemId];
+    this.io.emit('itemRemoved', itemId);
   }
 }

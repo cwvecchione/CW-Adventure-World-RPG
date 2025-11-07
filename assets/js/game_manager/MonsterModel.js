@@ -11,10 +11,9 @@ class MonsterModel {
     this.attack = attack;
   }
 
-  loseHealth() {
-    this.health -= 1;
+  loseHealth(attack) {
+    this.health -= attack;
   }
-
   move() {
     const randomPosition = randomNumber(1, 8);
     const distance = 64;

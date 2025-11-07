@@ -1,6 +1,7 @@
 const SpawnerType = {
   MONSTER: 'MONSTER',
   CHEST: 'CHEST',
+  ITEM: 'ITEM',
 };
 
 function randomNumber(min, max) {
