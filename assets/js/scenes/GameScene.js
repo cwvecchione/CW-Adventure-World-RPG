@@ -36,18 +36,29 @@ class GameScene extends Phaser.Scene {
     this.monsterDeathAudio = this.sound.add('enemyDeath', { loop: false, volume: 0.2 });
   }
 
-  createPlayer(playerObject) {
-    this.player = new PlayerContainer(
-      this,
-      playerObject.x * 2,
-      playerObject.y * 2,
-      'characters',
-      0,
-      playerObject.health,
-      playerObject.maxHealth,
-      playerObject.id,
-      this.playerAttackAudio,
+  createPlayer(playerObject, mainPlayer) {
+    const newPlayerGameObject = new PlayerContainer(
+    this,
+    playerObject.x * 2,
+    playerObject.y * 2,
+    'characters',
+    playerObject.frame,
+    playerObject.health,
+    playerObject.maxHealth,
+    playerObject.id,
+    this.playerAttackAudio,
+    mainPlayer,
+    playerObject.playerName,
+    playerObject.gold,
+    playerObject.defense,
+    playerObject.attack,
+    playerObject.playerItems,
     );
+    if (!mainPlayer) {
+      this.otherPlayers.add(newPlayerGameObject);
+    } else {
+      this.player = newPlayerGameObject;
+    }
   }
 
   createGroups() {
