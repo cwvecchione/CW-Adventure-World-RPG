@@ -8,4 +8,4 @@ The easist way to run the game is to download the repo, open a command-line term
 Arrow keys to move, Spacebar to attack.
 
 ## Planned Features
-Updated Graphics, Character Select, Inventory System, Muliplayer 
+Updated Graphics, Character Select, Inventory System, and Mobile Touch Support. A separate MMO version of this game is also in development.
